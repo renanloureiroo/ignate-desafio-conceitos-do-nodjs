@@ -88,25 +88,43 @@ app.post('/todos', checksExistsUserAccount, (request, response) => {
 
 });
 
+// update todo by id
 app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   const { id } = request.params
   const { user } = request
   const { title, deadline } = request.body
 
+  if (!id) {
+    return response.status(400).json({
+      error: "Missing id!"
+    })
+  }
+
   if (!title || !deadline) {
     return response.status(400).json({ error: "Missing information!" })
   }
 
-  let updateTodo = user.todos.find(todo => todo.id === id)
+  let todo = user.todos.find(todo => todo.id === id)
 
-  updateTodo.title = title
-  updateTodo.deadline = new Date(deadline)
+  if (!todo) {
+    return response.status(400).json({
+      error: "Todo not found!"
+    })
+  }
+
+  const updateTodo = {
+    id: todo.id,
+    title,
+    done: todo.done,
+    deadline: new Date(deadline),
+    created_at: todo.created_at
+  }
+
+  user.todos.splice(todo, 1)
+  user.todos.push(updateTodo)
 
 
-
-
-
-
+  return response.status(201).json(updateTodo)
 
 });
 
