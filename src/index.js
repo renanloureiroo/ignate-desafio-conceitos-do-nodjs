@@ -111,13 +111,12 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
       error: "Todo not found!"
     })
   }
+  const { title: titleT, deadline: deadlineT, ...rest } = todo
 
   const updateTodo = {
-    id: todo.id,
     title,
-    done: todo.done,
     deadline: new Date(deadline),
-    created_at: todo.created_at
+    ...rest
   }
 
   user.todos.splice(todo, 1)
@@ -127,13 +126,60 @@ app.put('/todos/:id', checksExistsUserAccount, (request, response) => {
   return response.status(201).json(updateTodo)
 
 });
-
+// update done
 app.patch('/todos/:id/done', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
-});
+  const { id } = request.params
+  const { user } = request
 
+  if (!id) {
+    return response.status(400).json({
+      error: "Missing id!"
+    })
+  }
+
+  const todo = user.todos.find(todo => todo.id === id)
+
+  if (!todo) {
+    return response.status(400).json({
+      error: "Todo not found!"
+    })
+  }
+
+  const { done: doneT, ...rest } = todo
+
+  const updateTodo = {
+    done: true,
+    ...rest
+  }
+
+  user.todos.splice(todo, 1)
+  user.todos.push(updateTodo)
+
+  return response.status(201).json(updateTodo)
+
+})
+
+// delete todo
 app.delete('/todos/:id', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
+  const { id } = request.params
+  const { user } = request
+
+  if (!id) {
+    return response.status(400).json({
+      error: "Missing id!"
+    })
+  }
+
+  const todo = user.todos.find(todo => todo.id === id)
+
+  if (!todo) {
+    return response.status(400).json({
+      error: "Todo not found!"
+    })
+  }
+
+  user.todos.splice(todo, 1)
+  return response.json(todo)
 });
 
 module.exports = app;
